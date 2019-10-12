@@ -223,7 +223,7 @@ def main():
 
 def reweighted_training(criterion, optimizer, scheduler):
     #original_model_name = "./model/cifar10_vgg16_acc_93.540_3fc_sgd_in_multigpu.pt"
-    original_model_name = "./model/cifar100_mobilenet_v2_exp3_acc_81.920_adam.pt"
+    original_model_name = "./cifar100_mobilenet_v2_exp3_acc_81.920_adam.pt"
     print("\n>_ Loading baseline/progressive model..... {}\n".format(original_model_name))
     
     ################
