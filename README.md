@@ -12,15 +12,15 @@ The model architecture is based on the MobileNet V2. For more details, please re
 
 # Pruning method
 
-We use reweighted L1 pruning method to prune the model. The detailed method is shown in XXX. The code for the pruning is in the training directory. Basically, starting from a pretrained unpruned model which achieves 81.92% accuracy on CIFAR-100, we first try to decrease the L1 norm of this model with the reweighted L1 pruning method to make model sparse. Then we set the parameters under a threshold to zero (obtain the sparsity mask) and retrain the model. Note that during retraining, the zero parameters are not updated.
+We use reweighted L1 pruning method to prune the model. The detailed method is shown in pruning/reqeight_l1_prune.pdf. The code for the pruning is in the pruning directory. Basically, starting from a pretrained unpruned model which achieves 81.92% accuracy on CIFAR-100, we first try to decrease the L1 norm of this model with the reweighted L1 pruning method to make model sparse. Then we set the parameters under a threshold to zero (obtain the sparsity mask) and retrain the model. Note that during retraining, the zero parameters are not updated.
 
 To run the pruning:
 
 ```
-python training/main.py
+python pruning/main.py
 ```
 
-or refer to the training/run.sh file.
+or refer to the pruning/run.sh file.
 
 
 
