@@ -24,8 +24,16 @@ or refer to the pruning/run.sh file.
 
 
 
+# Quantization method
 
 After pruning, we use [linear quantization](https://dsp-nbsphinx.readthedocs.io/en/nbsphinx-experiment/quantization/linear_uniform_characteristic.html) in a layer wise to compress our model and reduce operations. 
+
+To run the Quantization:
+
+```
+./quantization/quantization.sh
+```
+
 
 1. How to implement linear quantization?
 
