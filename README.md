@@ -151,9 +151,20 @@ So the score is 0.3510M / 36.5M + 61.25M / 10.49B = 0.0155.
 
 # Team member
 
-The team name is XXXX.
+The team name is Woody.
 
-This is an collaboration of Northeastern University, XXX university and IBM corporation. The team members are listed as follows, 
-- XXXX
-- XXXX
-- XXXX
+This is an collaboration of Northeastern University, Indiana University and IBM corporation. The team members are listed as follows, 
+- Northeastern University
+  - Pu Zhao
+  - Zheng Zhan
+  - Zhengang Li
+  - Xiaolong Ma
+  - Yanzhi Wang
+  - Xue Lin
+- Indiana University
+  - Qian Lou
+  - Lei Jiang
+- IBM
+  - Gaoyuan Zhang
+  - Sijia Liu
+
