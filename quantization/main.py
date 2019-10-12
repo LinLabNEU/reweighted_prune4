@@ -735,7 +735,7 @@ def hard_quant(weight,bits):
 
 
 def quantized_retrain(criterion, optimizer, scheduler):
-    model_path = "./model_retrained/cifar100_mobilenetv217_retrained_acc_80.510_config_mobile_v2_0.7_threshold.pt"
+    model_path = "./cifar100_mobilenetv217_retrained_acc_80.510_config_mobile_v2_0.7_threshold.pt"
     print("\n>_ Loading file... {}".format(model_path))
     # model.load_state_dict(torch.load("./model_reweighted/mnist_reweighted_eps_0.0001_acc_98.79.pt"))
     model.load_state_dict(torch.load(model_path))
@@ -876,7 +876,7 @@ def q_main_layerwise():
     criterion = CrossEntropyLossMaybeSmooth(smooth_eps=args.smooth_eps).cuda()
     args.smooth = args.smooth_eps > 0.0
     args.mixup = args.alpha > 0.0
-    model_path = "./model_retrained/cifar100_mobilenetv217_retrained_acc_80.510_config_mobile_v2_0.7_threshold.pt"
+    model_path = "../cifar100_mobilenetv217_retrained_acc_80.510_config_mobile_v2_0.7_threshold.pt"
     #model_path = "/home/qian/l1_share/model_retrained/cifar100_mobilenetv217_retrained_acc_80.420_config_mobile_v2_0.8_uneven_threshold.pt"
     print("\n>_ Loading file... {}".format(model_path))
     #model.load_state_dict(torch.load("./model_reweighted/mnist_reweighted_eps_0.0001_acc_98.79.pt"))
