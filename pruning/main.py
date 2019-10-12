@@ -151,10 +151,33 @@ if args.no_tricks:
     args.alpha = 0.0
     args.smooth_eps = 0.0
 
-
+#Create folder 
+def create_folder(path):
+    # delete space at the begining
+    path=path.strip()
+    # delete / in the end
+    path=path.rstrip("/")
+ 
+    # if folder exist
+    # exist     True
+    # not exist   False
+    isExists=os.path.exists(path)
+ 
+    if not isExists:
+        # create folder
+        os.makedirs(path) 
+        #print path + ' folder created' + path
+        return True
+    else:
+        #print path + ' folder already exists'
+        return False
+        
 def main():
     print(args)
 
+    path_now = os.getcwd()
+    create_folder(path_now + "/model_retrained/")
+    create_folder(path_now + "/model_reweighted/")
     """ bag of tricks set-ups"""
     criterion = CrossEntropyLossMaybeSmooth(smooth_eps=args.smooth_eps).cuda()
     args.smooth = args.smooth_eps > 0.0
