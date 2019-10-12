@@ -14,10 +14,7 @@ from torchvision import datasets, transforms
 from collections import OrderedDict
 import torch.backends.cudnn as cudnn
 
-from vgg import VGG
-from mobilenet import MobileNet
-from resnet import ResNet18, ResNet50
-from mobilenetv2 import MobileNetV2
+from mobilenet_v2_cifar100_exp_30 import MobileNetV2
 
 import prune_util
 from prune_util import GradualWarmupScheduler
@@ -136,24 +133,7 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=args.test_batch_size, shuffle=True, **kwargs)
 
 # set up model archetecture
-if args.arch == "vgg":
-    if args.depth == 16:
-        model = VGG(depth=16, init_weights=True, cfg=None)
-    elif args.depth == 19:
-        model = VGG(depth=19, init_weights=True, cfg=None)
-    else:
-        sys.exit("vgg doesn't have those depth!")
-elif args.arch == "resnet":
-    if args.depth == 18:
-        model = ResNet18()
-    elif args.depth == 50:
-        model = ResNet50()
-    else:
-        sys.exit("resnet doesn't implement those depth!")
-elif args.arch == "mobilenet":
-    args.depth = 13
-    model = MobileNet()
-elif args.arch == "mobilenetv2":
+if args.arch == "mobilenetv2":
     args.depth = 17
     model = MobileNetV2()
 if args.multi_gpu:
