@@ -37,7 +37,7 @@ To run the Quantization:
 
 1. How to implement linear quantization?
 
-Our implementation refer to [link](https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py).
+Our implementation refers to [link](https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py).
 We implement linear quantization in [quant.py] (https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py) according to Equation Xq[k] = round( delta * floor(X[k] / delta + 1/2 ) ), where X[k] is one element in inputs X, delta is the step size, and round() function bounds the quantized result into range [-math.pow(2.0, bits-1), math.pow(2.0, bits-1)-1]. The main code is shown as following, and all the codes can be found in [quant.py](https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py) file.
 
 ```python
@@ -105,7 +105,7 @@ Like [this post](https://nervanasystems.github.io/distiller/quantization.html) s
 For all the inputs and weights of 57 convolutional layers and 1 layer Fully Connected layers, the quantized bits for each layer are listed as :
 [9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6, 8, 6, 6, 8, 8, 6, 8, 6, 8, 6, 6, 8, 8, 8, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 6]
 
-Please note that all the batch normalization layers and other input layers are quantized into 8 bits. With above the quantized bits for each layer, we can acienve 80.06% accuracy. And the number bits of multiplications in the convolutional layers and Fully connected layers is the quantized bit, e.g. n-bit, but the number bits of accumulation(addition) is mixed precision in order to avoid overflow.(50% 2n bits, 25% (2n+1) bits, 12.5% (2n+2) bits until to 32 bits or all the accumulations in one convolution are done.)
+Please note that all the batch normalization layers and other input layers are quantized into 8 bits. With above the quantized bits for each layer, we can achieve 80.06% accuracy. And the number bits of multiplications in the convolutional layers and Fully connected layers is the quantized bit, e.g. n-bit, but the number bits of accumulation(addition) is mixed precision in order to avoid overflow.(50% 2n bits, 25% (2n+1) bits, 12.5% (2n+2) bits until to 32 bits or all the accumulations in one convolution are done.)
 
 
 # Verify model
