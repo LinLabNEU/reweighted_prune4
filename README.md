@@ -166,7 +166,7 @@ So the score is 0.3510M / 36.5M + 61.25M / 10.49B = 0.0155.
 
 The team name is Woody.
 
-This is an collaboration of Northeastern University, Indiana University and MIT-IBM Watson AI Lab. The team members are listed as follows, 
+This is an collaboration of Northeastern University, Indiana University and MIT-IBM Watson AI Lab, IBM Research. The team members are listed as follows, 
 - Northeastern University
   - Pu Zhao
   - Zheng Zhan
@@ -177,7 +177,7 @@ This is an collaboration of Northeastern University, Indiana University and MIT-
 - Indiana University
   - Qian Lou
   - Lei Jiang
-- MIT-IBM Watson AI Lab
+- MIT-IBM Watson AI Lab, IBM Research
   - Gaoyuan Zhang
   - Sijia Liu
 
