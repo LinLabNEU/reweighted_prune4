@@ -7,11 +7,8 @@ This project is based on Pytorch. We first introduce the pruning and quantizatio
 
 # Model
 
-The model architecture is based on the MobileNet V2. For more details, please refer to the mobilenet_v2.py file and the original paper. The pruned model is saved as cifar100_mobilenetv2.pt. It can achieve 80.12% accuracy satisfying the 80% accuracy requirement.
+The model architecture is based on the MobileNet V2. For more details, please refer to the mobilenet_v2.py file and the original paper. The pruned model is saved as cifar100_mobilenetv2.pt. It can achieve 80.1% accuracy satisfying the 80% accuracy requirement.
 
-
-total weights: 3905632, total number of zeros: 3005523, non-zeros: 900109, zero sparsity is: 0.7695\
-only consider conv layers, compression rate is: 4.3391
 
 # Pruning method
 
@@ -108,7 +105,7 @@ To load and verify the model, run:
 ```
 python testers.py
 ```
-It outputs the test accuracy of the model. It also counts the number of non-zero and zero elements in the parameters. The total number of parameters is XXX. Among them, there are XXXX zero parameters and XXXX non-zero parameters. 
+It outputs the test accuracy of the model. It also counts the number of non-zero and zero elements in the parameters. The total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6bit and 614 9bit, the last are all 8 bit. For non-zero bachnorm parameters, there are 19712 6bit and 160 9bit, the last are all 8 bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
 
 
 # Count parameters
@@ -130,26 +127,27 @@ We tried two ways to count the operations. One way is to use the open-source [py
 pip install thop
 python mobilenetv2.py
 ```
-It shows that the total number of operations is 325.4M. It counts the real operations during runtime and does not consider the sparsity since zero parameters still participate in the operations. Besides, for unquantized models, multiplication are counted as 16bit while the operation counting is based on 32bit, we believe the operation number for scoring should be smaller than the value 325.4M. We do not use this number for scoring and this number can work as a reference. 
+It shows that the total number of operations is 325.4M. It counts the real operations during runtime and does not consider the sparsity since zero parameters still participate in the operations. We do not use this number for scoring and this number can work as a reference. 
 
 We would like to use the second method to count the number of operations. It is based on the counting example from the MicroNet challenge group. ( https://github.com/google-research/google-research/blob/master/micronet_challenge/ )
 The original version is for the efficientnet on tensorflow. We made necessary modifications to work for the our mobilenet_v2 model on pytorch. To run the counting,
 ```
 python check_model_operations.py
 ```
-It shows that the there are 77.84M multiplications and 153.41 additions in the case of no sparsity (setting the sparsity to 0 when print_summary). Since the multiplication is performed as 16bit and counted as 32bit, the actual number of multiplication should be 155.68M and the total number of operations is 309M, which is close to and no larger the 325.4M results in the first counting method with the tool.
+We first count the number of additions and multiplications by setting the addition bits and multiplication bits to 32 in the check_model_operations.py. It shows that the there are 155.692M multiplications and 153.41 additions in the case of no sparsity (setting the sparsity to 0 when print_summary). The total number of operations is 309M, which is close to and no larger the 325.4M results in the first counting method with the tool.
 
-So in the case of no sparsity, the total number of operations is 231.25M (77.84M+153.41M). If we consider the sparsity and set it to non-zero value, the number of operations will continue to reduce. But since the sparsity for each layer is not the same, it is hard to use one number to represent the sparsity of all layers. We would work on that if time permits. But if we do not have enough time, we think that setting the sparsity parameter to 0.5 during should be an appropriate choice, considering the overall sparsity for the whole model is about 80%. By setting the sparsity parameter to 0.5, there are 39.49M multiplications and 76.7M additions according to the outputs of the check_model_operations.py file. The total operation number is 116.19M. This real operation number should be smaller than this, because most of the layers have a sparsity larger than 0.5 and the overall sparsity of the whole model is about 0.8. But we think we can use this operation number in scoring.
+In the pruned model, we should set the sparsity to a non-zero value, and the number of operations will decrease. But since the sparsity for each layer is not the same, it is not easy to use one number to represent the sparsity of all layers.  We think that setting the sparsity parameter to 0.5 should be an appropriate choice, considering the overall sparsity for the whole model is about 75% (0.98M / 4M). By setting the sparsity parameter to 0.5, there are 78.99M multiplications and 76.7M additions according to the outputs of the check_model_operations.py file (still setting the addition bits and multiplication bits to 32 bits). 
 
-Considering the quantization, the total number of operations (counted with 32bit base) is XXXX.
+We perform quantization for this model and most of the layers are quantized to 8bits or 6bits. Only the first layer is quantized to 9 bits. As specified in the Quantization part, the multiplication bits after quantization should the the same as the quantization bits, we set the multiplication bits to 8 bits and count the multiplication as 32 bits. So the multiplication number is 19.75M (78.99M / 4). For the addition, 50% are 16bits, 25% are 17bits, 12.5% are 18bits, 6.25% are 19bits, 3.125% are 20bits and so on. For the simpliclity, we set the rest 3.125% addition to 32bit. So the total number of addition is 41.5M
+(76.7M * (0.5 * 16 + 0.25 * 17 + 0.125 * 18 + 0.0625 * 19 + 0.03125 * 20+0.03125 * 32) / 32). So the total number of operations for scoring is 61.25M (19.75M + 41.5M).
 
-operation number: XXX
+operation number: 61.25M
 
 # Score 
 
 For CIFAR-100, parameter storage and compute requirements will be normalized relative to WideResNet-28-10, which has 36.5M parameters and 10.49B math operations.
 
-So the score is 0.3510M/36.5M + XXX/10.49B = XXX.
+So the score is 0.3510M / 36.5M + 61.25M / 10.49B = 0.0155.
 
 # Team member
 
