@@ -24,12 +24,13 @@ or refer to the pruning/run.sh file.
 
 
 
-# Quantization Analysis
 
 After pruning, we use [linear quantization](https://dsp-nbsphinx.readthedocs.io/en/nbsphinx-experiment/quantization/linear_uniform_characteristic.html) in a layer wise to compress our model and reduce operations. 
 
 1. How to implement linear quantization?
-We implement linear quantization in [quant.py] according to Equation Xq[k]=round(delta*floor(X[k]/delta+1/2)), where X[k] is one element in inputs X, delta is the step size, and round() function bounds the quantized result into range (-math.pow(2.0, bits-1), math.pow(2.0, bits-1)-1). The main code is shown as following, and all the codes can be found in [quant.py] file.
+
+Our implementation refer to [link](https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py).
+We implement linear quantization in [quant.py] (https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py) according to Equation Xq[k] = round( delta * floor(X[k] / delta + 1/2 ) ), where X[k] is one element in inputs X, delta is the step size, and round() function bounds the quantized result into range [-math.pow(2.0, bits-1), math.pow(2.0, bits-1)-1]. The main code is shown as following, and all the codes can be found in [quant.py](https://github.com/LinLabNEU/reweighted_prune4/blob/master/quantization/quant.py) file.
 
 ```python
 def linear_quantize(input, sf, bits):
@@ -51,6 +52,7 @@ Firstly, we load the pruned model and read all the weights in each layer using m
 
 ```python
 QBNs=setQBN(LayerSize,1)
+#QBNs=[9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6, 8, 6, 6, 8, 8, 6, 8, 6, 8, 6, 6, 8, 8, 8, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 6]
     count=-1
     for k, v in state_dict.items():
         sizes=len(list(v.size()))
@@ -86,16 +88,16 @@ Then we quantize all the inputs like activations, batchnorms, poolings using pre
         model.load_state_dict(model_new.state_dict())#print(model_new)
 ```
 
-
 3. Avoiding accumulation overflow
 
-Like [this post](https://nervanasystems.github.io/distiller/quantization.html) said, convolution and fully connected layers involve the storing of intermediate results in accumulators. Due to the limited dynamic range of integer formats, if we would use the same bit-width for the weights and activation, and for the accumulators, we would likely overflow very quickly. Therefore, accumulators are usually implemented with higher bit-widths. The result of multiplying two n-bit integers is, at most, a 2n-bit number. In convolution layers, such multiplications are accumulated c⋅k2 times, where c is the number of input channels and k is the kernel width (assuming a square kernel). Hence, to avoid overflowing, the accumulator should be 2n+M-bits wide, where M is at least log2(c⋅k2). In our case, all the multiplication in the quantized MobileNet2 is not overflow. Since for a convolution operation, element-wise multiplication is performed firstly, and each element in the kernel and each element in the input are quantized into Qbits, for example 8bits, then each multiplication in the convolution is just b-bits multiplication, the product is 2n-bits which leads to accumulation will be at least 2n-bits without rounding the product back into 8bits. Therefore without rounding in the convolution, addition taking 2n-bits product in the convolution will be overflow. And half of the addition is just 2n-bits, the 25% addition will be (2n+1) bits, the 12.25% will be (2n+2) bits. This is a so-called "binary-tree" accumulation. 
+Like [this post](https://nervanasystems.github.io/distiller/quantization.html) said, convolution and fully connected layers involve the storing of intermediate results in accumulators. Due to the limited dynamic range of integer formats, if we would use the same bit-width for the weights and activation, and for the accumulators, we would likely overflow very quickly. Therefore, accumulators are usually implemented with higher bit-widths. The result of multiplying two n-bit integers is, at most, a 2n-bit number. In convolution layers, such multiplications are accumulated c⋅k^2 times, where c is the number of input channels and k is the kernel width (assuming a square kernel). Hence, to avoid overflowing, the accumulator should be 2n+M-bits wide, where M is at least log2(c⋅k2). In our case, all the multiplication in the quantized MobileNet2 is not overflow. Since for a convolution operation, element-wise multiplication is performed firstly, and each element in the kernel and each element in the input are quantized into n-bits, for example 8bits, then each multiplication in the convolution is just 8-bits multiplication, the product is 2n-bits which leads to the first-time accumulation will be at least 2n-bits without rounding the product back into 8bits. The first-time accumulation between each two numbers occupies 50% of all additions in the convolution. Therefore half of the addition is just 2n-bits, the 25% addition (The second accumulation) will be (2n+1) bits, the 12.25% addition (The third accumulation) will be (2n+2) bits, this action will be repeated until addtion is 32 bits or all the accumulations are done. This is a so-called "binary-tree" accumulation, which decide how we caculate the operation number of additions in this micronet challenge. 
 
 4. Testing and result
+
 For all the inputs and weights of 57 convolutional layers and 1 layer Fully Connected layers, the quantized bits for each layer are listed as :
 [9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6, 8, 6, 6, 8, 8, 6, 8, 6, 8, 6, 6, 8, 8, 8, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 8, 6]
 
-With above the quantized bits for each layer, we can acienve 80.00% accuracy. And the number bits of multiplications in the convolutional layers and Fully connected layers is the quantized bit, e.g. n-bit, but the  number bits of accumulation(addition) is hybrid in order to avoid overflow.(50% 2n bits, 25% (2n+1) bits, 12.5% (2n+2) bits ....)
+Please note that all the batch normalization layers and other input layers are quantized into 8 bits. With above the quantized bits for each layer, we can acienve 80.06% accuracy. And the number bits of multiplications in the convolutional layers and Fully connected layers is the quantized bit, e.g. n-bit, but the number bits of accumulation(addition) is mixed precision in order to avoid overflow.(50% 2n bits, 25% (2n+1) bits, 12.5% (2n+2) bits until to 32 bits or all the accumulations in one convolution are done.)
 
 
 # Verify model
@@ -116,7 +118,6 @@ python testers.py
 ```
 We can see that the total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6bit and 614 9bit, the last are all 8 bit. For non-zero bachnorm parameters, there are 19712 6bit and 160 9bit, the last are all 8 bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
 
-- Parameter number: 0.3510M
 
 # Count operations
 
@@ -126,9 +127,11 @@ We tried two ways to count the operations. One way is to use the open-source [py
 
 ```
 pip install thop
+cd quantization/
 python mobilenetv2.py
 ```
 It shows that the total number of operations is 325.4M. It counts the real operations during runtime and does not consider the sparsity since zero parameters still participate in the operations. We do not use this number for scoring and this number can work as a reference. 
+
 
 We would like to use the second method to count the number of operations. It is based on the counting example from the MicroNet challenge group. ( https://github.com/google-research/google-research/blob/master/micronet_challenge/ )
 The original version is for the efficientnet on tensorflow. We made necessary modifications to work for the our mobilenet_v2 model on pytorch. To run the counting,
