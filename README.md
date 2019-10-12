@@ -116,6 +116,7 @@ python testers.py
 ```
 We can see that the total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6bit and 614 9bit, the last are all 8 bit. For non-zero bachnorm parameters, there are 19712 6bit and 160 9bit, the last are all 8 bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
 
+- Parameter number: 0.3510M
 
 # Count operations
 
@@ -141,7 +142,7 @@ In the pruned model, we should set the sparsity to a non-zero value, and the num
 We perform quantization for this model and most of the layers are quantized to 8bits or 6bits. Only the first layer is quantized to 9 bits. As specified in the Quantization part, the multiplication bits after quantization should the the same as the quantization bits, we set the multiplication bits to 8 bits and count the multiplication as 32 bits. So the multiplication number is 19.75M (78.99M / 4). For the addition, 50% are 16bits, 25% are 17bits, 12.5% are 18bits, 6.25% are 19bits, 3.125% are 20bits and so on. For the simpliclity, we set the rest 3.125% addition to 32bit. So the total number of addition is 41.5M
 (76.7M * (0.5 * 16 + 0.25 * 17 + 0.125 * 18 + 0.0625 * 19 + 0.03125 * 20+0.03125 * 32) / 32). So the total number of operations for scoring is 61.25M (19.75M + 41.5M).
 
-operation number: 61.25M
+- Operation number: 61.25M
 
 # Score 
 
