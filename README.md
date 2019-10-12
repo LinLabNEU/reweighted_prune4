@@ -7,12 +7,12 @@ This project is based on Pytorch. We first introduce the pruning and quantizatio
 
 # Model
 
-The model architecture is based on the MobileNet V2. For more details, please refer to the mobilenet_v2.py file and the original paper. The pruned model is saved as cifar100_mobilenetv2.pt. It can achieve 80.1% accuracy satisfying the 80% accuracy requirement.
+The model architecture is based on the MobileNet V2. For more details, please refer to the mobilenet_v2_cifar100_exp_30.py file and the original paper. The pruned model is saved as cifar100_mobilenetv217_retrained_acc_80.510mobilenetv217_quantized_acc_80.000_config_vgg16_threshold.pt. It can achieve 80.06% accuracy satisfying the 80% accuracy requirement.
 
 
 # Pruning method
 
-We use reweighted L1 pruning method to prune the model. The detailed method is shown in pruning/reqeight_l1_pruning.pdf. The code for the pruning is in the pruning directory. Basically, starting from a pretrained unpruned model which achieves 81.92% accuracy on CIFAR-100, we first try to decrease the L1 norm of this model with the reweighted L1 pruning method to make model sparse. Then we set the parameters under a threshold to zero (obtain the sparsity mask) and retrain the model. Note that during retraining, the zero parameters are not updated.
+We use reweighted L1 pruning method to prune the model. The detailed method is shown in pruning/reweight_l1_pruning.pdf. The code for the pruning is in the pruning directory. Basically, starting from a pretrained unpruned model which achieves 81.92% accuracy on CIFAR-100, we first try to decrease the L1 norm of this model with the reweighted L1 pruning method to make model sparse. Then we set the parameters under a threshold to zero (obtain the sparsity mask) and retrain the model. Note that during retraining, the zero parameters are not updated.
 
 To run the pruning:
 
@@ -115,7 +115,7 @@ To load and verify the model, run:
 ```
 python testers.py
 ```
-It outputs the test accuracy of the model. It also counts the number of non-zero and zero elements in the parameters. The total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6bit and 614 9bit, the last are all 8 bit. For non-zero bachnorm parameters, there are 19712 6bit and 160 9bit, the last are all 8 bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
+It outputs the test accuracy of the model. It also counts the number of non-zero and zero elements in the parameters. The total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6-bit parameters and 614 9-bit parameters, the rest are all 8-bit. For non-zero bachnorm parameters, there are 19712 6-bit parameters and 160 9-bit parameters, the rest are all 8-bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
 
 
 # Count parameters
@@ -124,8 +124,9 @@ From the output of the testers file, that is,
 ```
 python testers.py
 ```
-We can see that the total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6bit and 614 9bit, the last are all 8 bit. For non-zero bachnorm parameters, there are 19712 6bit and 160 9bit, the last are all 8 bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
+We can see that the total number of parameters is 3996704 (4.0M). Among them, there are 3014635 (3.02M) zero parameters and 982069 (0.98M) non-zero parameters which contains 91072 batchnorm parameters and 890997 non-zero weights. For non-zero weights, there are 245999 6-bit parameters and 614 9-bit parameters, the rest are all 8-bit. For non-zero bachnorm parameters, there are 19712 6-bit parameters and 160 9-bit parameters, the rest are all 8-bit. The number of bitmask is 122051 (0.1221M). So the total parameters for storage is 0.3510M ((614\*9 + 245999\*6 + 160\*9 + 19712\*6 + 644384\*8 + 71200\*8)/32 + 122051).
 
+- Parameter number: 0.3510M
 
 # Count operations
 
@@ -146,12 +147,12 @@ The original version is for the efficientnet on tensorflow. We made necessary mo
 ```
 python check_model_operations.py
 ```
-We first count the number of additions and multiplications by setting the addition bits and multiplication bits to 32 in the check_model_operations.py. It shows that the there are 155.692M multiplications and 153.41 additions in the case of no sparsity (setting the sparsity to 0 when print_summary). The total number of operations is 309M, which is close to and no larger the 325.4M results in the first counting method with the tool.
+We first count the number of additions and multiplications by setting the addition bits and multiplication bits to 32 in the check_model_operations.py. It shows that the there are 155.692M multiplications and 153.41 additions in the case of no sparsity (setting the sparsity to 0 when print_summary). The total number of operations is 309M, which is close to and no larger than the 325.4M value in the first counting method with the tool.
 
 In the pruned model, we should set the sparsity to a non-zero value, and the number of operations will decrease. But since the sparsity for each layer is not the same, it is not easy to use one number to represent the sparsity of all layers.  We think that setting the sparsity parameter to 0.5 should be an appropriate choice, considering the overall sparsity for the whole model is about 75% (0.98M / 4M). By setting the sparsity parameter to 0.5, there are 78.99M multiplications and 76.7M additions according to the outputs of the check_model_operations.py file (still setting the addition bits and multiplication bits to 32 bits). 
 
 We perform quantization for this model and most of the layers are quantized to 8bits or 6bits. Only the first layer is quantized to 9 bits. As specified in the Quantization part, the multiplication bits after quantization should the the same as the quantization bits, we set the multiplication bits to 8 bits and count the multiplication as 32 bits. So the multiplication number is 19.75M (78.99M / 4). For the addition, 50% are 16bits, 25% are 17bits, 12.5% are 18bits, 6.25% are 19bits, 3.125% are 20bits and so on. For the simpliclity, we set the rest 3.125% addition to 32bit. So the total number of addition is 41.5M
-(76.7M * (0.5 * 16 + 0.25 * 17 + 0.125 * 18 + 0.0625 * 19 + 0.03125 * 20+0.03125 * 32) / 32). So the total number of operations for scoring is 61.25M (19.75M + 41.5M).
+(76.7M * (0.5 * 16 + 0.25 * 17 + 0.125 * 18 + 0.0625 * 19 + 0.03125 * 20 + 0.03125 * 32) / 32). So the total number of operations for scoring is 61.25M (19.75M + 41.5M).
 
 - Operation number: 61.25M
 
@@ -165,7 +166,7 @@ So the score is 0.3510M / 36.5M + 61.25M / 10.49B = 0.0155.
 
 The team name is Woody.
 
-This is an collaboration of Northeastern University, Indiana University and IBM corporation. The team members are listed as follows, 
+This is an collaboration of Northeastern University, Indiana University and MIT-IBM Watson AI Lab. The team members are listed as follows, 
 - Northeastern University
   - Pu Zhao
   - Zheng Zhan
@@ -176,7 +177,7 @@ This is an collaboration of Northeastern University, Indiana University and IBM 
 - Indiana University
   - Qian Lou
   - Lei Jiang
-- IBM
+- MIT-IBM Watson AI Lab
   - Gaoyuan Zhang
   - Sijia Liu
 
