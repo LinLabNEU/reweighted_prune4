@@ -91,6 +91,12 @@ parser.add_argument('--smooth-eps', type=float, default=0.0, metavar='M',
 parser.add_argument('--no-tricks', action='store_true', default=False,
                     help='disable all training tricks and restore original classic training process')
 
+def setup_seed(seed):
+     torch.manual_seed(seed)
+     torch.cuda.manual_seed_all(seed)
+     np.random.seed(seed)
+     random.seed(seed)
+     torch.backends.cudnn.deterministic = True
 
 args = parser.parse_args()
 
@@ -173,6 +179,7 @@ def create_folder(path):
         return False
         
 def main():
+    setup_seed(55)
     print(args)
 
     path_now = os.getcwd()
