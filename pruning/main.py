@@ -13,7 +13,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from collections import OrderedDict
 import torch.backends.cudnn as cudnn
-
+import random
 from mobilenet_v2_cifar100_exp_30 import MobileNetV2
 
 import prune_util
