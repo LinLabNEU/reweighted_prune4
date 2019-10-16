@@ -3,7 +3,6 @@ export CUDA_VISIBLE_DEVICES=0,1
 python -u main.py --arch mobilenetv2 \
 					   --depth 17 \
 					   --batch-size 64 \
-					   --no-tricks \
 					   --rew \
 					   --sparsity-type irregular \
 					   --epoch 300 \
@@ -21,7 +20,6 @@ echo "Congratus! Finished rew training!
 python -u main.py --arch mobilenetv2 \
 					   --depth 17 \
 					   --batch-size 64 \
-					   --no-tricks \
 					   --masked-retrain \
 					   --sparsity-type threshold \
 					   --epoch 300 \
