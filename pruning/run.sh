@@ -5,7 +5,7 @@ python -u main.py --arch mobilenetv2 \
 					   --batch-size 64 \
 					   --rew \
 					   --sparsity-type irregular \
-					   --epoch 10 \
+					   --epoch 300 \
 					   --optmzr adam \
 					   --lr 0.001 \
 					   --lr-scheduler cosine \
@@ -22,7 +22,7 @@ python -u main.py --arch mobilenetv2 \
 					   --batch-size 64 \
 					   --masked-retrain \
 					   --sparsity-type threshold \
-					   --epoch 10 \
+					   --epoch 300 \
 					   --optmzr adam \
 					   --lr 0.001 \
 					   --lr-scheduler cosine \
